@@ -5,9 +5,9 @@
 				<div class="gxk">评价系统</div>
 				<div class="user_set">
 					<img class="admin_logo" src="../static/admin_logo.png">
-					<div class="header_text">用户名称</div>
+					<div class="header_text">{{role_name}}</div>
 					<div class="line"></div>
-					<div class="header_text">退出</div>
+					<el-button type="text" @click="loginOut">退出</el-button>
 				</div>
 			</el-header>
 			<el-container class="content_box">
@@ -117,10 +117,12 @@
 }
 </style>
 <script>
+	import resource from '../api/resource.js'
 	export default{
 		data(){
 			return{
 				activeIndex:"/comment_list",
+				role_name:""
 			}
 		},
 		watch:{
@@ -130,14 +132,35 @@
 				};
 			}
 		},
+		created(){
+			this.role_name = localStorage.getItem("role_name");
+		},
 		methods:{
 			handleSelect(index){
 				this.activeIndex = index;
-				// if(index == '/data_role_user' || index == '/role_user'){
-				// 	this.activeIndex = '/permssions_index';
-				// }else{
-				// 	this.activeIndex = index;
-				// }
+			},
+			//退出
+			loginOut(){
+				this.$confirm('确认退出?', '提示', {
+					confirmButtonText: '确定',
+					cancelButtonText: '取消',
+					type: 'warning'
+				}).then(() => {
+					resource.loginOut().then(res => {
+						if(res.data.code == 1){
+							this.$message.success(res.data.msg);
+							localStorage.clear();
+							this.$router.replace('/login');
+						}else{
+							this.$message.warning(res.data.msg);
+						}
+					})
+				}).catch(() => {
+					this.$message({
+						type: 'info',
+						message: '取消'
+					});          
+				});
 			}
 		}
 	}

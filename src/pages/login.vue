@@ -66,6 +66,7 @@
 }
 </style>
 <script>
+	import resource from '../api/resource.js'
 	export default{
 		data(){
 			return{
@@ -80,8 +81,20 @@
 				}else if(this.password == ''){
 					this.$message.warning('请输入登录密码');
 				}else{
-					console.log(this.account)
-					console.log(this.password)
+					let arg = {
+						username:this.account,
+						password:this.password
+					}
+					resource.login(arg).then(res => {
+						if(res.data.code == 1){
+							this.$message.success(res.data.msg);
+							localStorage.setItem("role_id",res.data.data.role_id);
+							localStorage.setItem("role_name",res.data.data.real_name);
+							this.$router.replace('/comment_list');
+						}else{
+							this.$message.warning(res.data.msg);
+						}
+					})
 				}
 			}
 		}

@@ -2,20 +2,23 @@
 	<div>
 		<el-form :inline="true" size="small" class="demo-form-inline">
 			<el-form-item label="店铺名称:" style="margin-right: 20px">
-				<el-select v-model="select_store_list" clearable :popper-append-to-body="false" multiple filterable collapse-tags placeholder="全部">
-					<el-option v-for="item in store_list" :key="item" :label="item" :value="item">
+				<el-select v-model="shop_id" clearable filterable :popper-append-to-body="false"placeholder="全部">
+					<el-option v-for="item in store_list" :key="item.shop_id" :label="item.shop_name" :value="item.shop_id">
 					</el-option>
 				</el-select>
-			</el-form-item>
-			<el-form-item label="编号:" style="margin-right: 20px">
-				<el-input clearable placeholder="输入编号" v-model="code"></el-input>
 			</el-form-item>
 			<el-form-item label="商品ID:" style="margin-right: 20px">
 				<el-input clearable placeholder="输入商品ID" v-model="goods_id"></el-input>
 			</el-form-item>
+			<el-form-item label="订单号:" style="margin-right: 20px">
+				<el-input clearable placeholder="输入订单号" v-model="order_sn"></el-input>
+			</el-form-item>
+			<el-form-item label="旺旺号:" style="margin-right: 20px">
+				<el-input clearable placeholder="旺旺号" v-model="ww"></el-input>
+			</el-form-item>
 			<el-form-item label="评价状态:" style="margin-right: 20px">
-				<el-select v-model="select_status_list" clearable :popper-append-to-body="false" multiple filterable collapse-tags placeholder="全部">
-					<el-option v-for="item in status_list" :key="item" :label="item" :value="item">
+				<el-select v-model="status" clearable :popper-append-to-body="false" placeholder="全部">
+					<el-option v-for="item in status_list" :key="item.id" :label="item.name" :value="item.id">
 					</el-option>
 				</el-select>
 			</el-form-item>
@@ -24,33 +27,33 @@
 				</el-date-picker>
 			</el-form-item>
 			<el-form-item>
-				<el-button type="primary" size="small" @click="getList">搜索</el-button>
+				<el-button type="primary" size="small" @click="searchFun">搜索</el-button>
 			</el-form-item>
 		</el-form>
-		<!-- <el-table size="small" :data="dataObj.data" tooltip-effect="dark" style="width: 100%" :header-cell-style="{'background':'#f4f4f4'}">
-			<el-table-column align="center" :width="160" property="ksbm" label="编号"></el-table-column>
-			<el-table-column align="center" :width="160" property="gyshh" label="商品ID"></el-table-column>
-			<el-table-column align="center" :width="160" property="mc" label="旺旺号"></el-table-column>
-			<el-table-column align="center" :width="160" property="gys" label="订单号"></el-table-column>
-			<el-table-column align="center" :width="160" property="sjhpxz" label="店铺"></el-table-column>
-			<el-table-column align="center" :width="160" property="jyhpxz" label="订单日期"></el-table-column>
-			<el-table-column align="center" :width="160" property="sjxrrq" label="任务状态"></el-table-column>
-			<el-table-column align="center" :width="160" property="remark" label="取消理由">
-			</el-table-column>
-			<el-table-column align="center" :width="160" property="remark" label="拒绝理由">
-			</el-table-column>
-			<el-table-column align="center" :width="160" property="remark" label="接单人">
+		<el-table size="small" :data="dataObj.data" tooltip-effect="dark" style="width: 100%" :header-cell-style="{'background':'#f4f4f4'}">
+			<el-table-column align="center" :width="160" property="order_id" label="编号"></el-table-column>
+			<el-table-column align="center" :width="160" property="goods_id" label="商品ID"></el-table-column>
+			<el-table-column align="center" :width="160" property="ww" label="旺旺号"></el-table-column>
+			<el-table-column align="center" :width="160" property="order_sn" label="订单号"></el-table-column>
+			<el-table-column align="center" :width="160" property="shop_name" label="店铺"></el-table-column>
+			<el-table-column align="center" :width="160" property="order_time" label="订单日期"></el-table-column>
+			<el-table-column align="center" :width="160" property="status_name" label="任务状态"></el-table-column>
+			<el-table-column align="center" :width="160" property="fail_reason" label="原因">
 			</el-table-column>
 			<el-table-column label="操作" align="center" width="180" fixed="right">
 				<template slot-scope="scope">
-					<el-button type="text" size="small">邀请评价</el-button>
-					<el-button type="text" size="small">取消任务</el-button>
-					<el-button type="text" size="small">查看</el-button>
-					<el-button type="text" size="small">审核</el-button>
-
-					<el-button type="text" size="small">编辑</el-button>
-					<el-button type="text" size="small">取消</el-button>
-					<el-button type="text" size="small">查看</el-button>
+					<div v-if="role_id == '2'">
+						<el-button type="text" size="small" @click="getOrderDetail('1',scope.row.order_id)" v-if="scope.row.status == '1'">邀请评价</el-button>
+						<el-button type="text" size="small" v-if="scope.row.status == '2'" @click="cancelOrder(scope.row.order_id)">取消任务</el-button>
+						<el-button type="text" size="small" @click="getOrderDetail('2',scope.row.order_id)" v-if="scope.row.status != '1' && scope.row.status != '3'">查看</el-button>
+						<el-button type="text" size="small" @click="getOrderDetail('3',scope.row.order_id)" v-if="scope.row.status == '3'">审核</el-button>
+					</div>
+					<div v-if="role_id == '3'">
+						<el-button type="text" size="small" @click="replaceOrder(scope.row.order_id)" v-if="scope.row.status == '2'">更换订单</el-button>
+						<el-button type="text" size="small" @click="getOrderDetail('4',scope.row.order_id)" v-if="scope.row.status == '2'">提交任务</el-button>
+						<el-button type="text" size="small" @click="getOrderDetail('2',scope.row.order_id)" v-if="scope.row.status != '1' && scope.row.status != '2'">查看</el-button>
+						<el-button type="text" size="small" @click="getOrderDetail('4',scope.row.order_id)" v-if="scope.row.status == '3' || scope.row.status == '5'">编辑</el-button>
+					</div>
 				</template>
 			</el-table-column>
 		</el-table>
@@ -65,36 +68,41 @@
 			:total="dataObj.total"
 			>
 		</el-pagination>
-	</div> -->
+	</div>
 	<!-- 弹框 -->
-	<el-dialog title="弹框" center :visible.sync="showDialog">
+	<el-dialog :title="dialog_title" center @close="closeDialog" :close-on-click-modal="false" :visible.sync="showDialog">
 		<div class="dialog_row">
 			<div class="label">订单日期</div>
-			<div class="value">2021/6/9</div>
+			<div class="value">{{orderDetail.order_time}}</div>
 		</div>
 		<div class="dialog_row">
 			<div class="label">编号</div>
-			<div class="value">111213</div>
+			<div class="value">{{orderDetail.order_id}}</div>
 		</div>
 		<div class="dialog_row">
 			<div class="label">商品ID</div>
-			<div class="value">123123123</div>
+			<div class="value">{{orderDetail.goods_id}}</div>
 		</div>
 		<div class="dialog_row">
 			<div class="label">店铺名</div>
-			<div class="value">胖胖哥</div>
+			<div class="value">{{orderDetail.shop_name}}</div>
 		</div>
 		<div class="dialog_row">
 			<div class="label">旺旺号</div>
-			<div class="value">123123</div>
+			<div class="value">{{orderDetail.ww}}</div>
+		</div>
+		<div class="dialog_row">
+			<div class="label">管理员</div>
+			<div class="value">{{orderDetail.admin_name}}</div>
 		</div>
 		<div class="dialog_row">
 			<div class="label">订单号</div>
-			<div class="value">12736817236817236</div>
+			<div class="value">{{orderDetail.order_sn}}</div>
 		</div>
 		<div class="dialog_row">
 			<div class="label">评论图片</div>
-			<div class="value">
+			<!-- 上传图片 -->
+			<div class="value" v-if="diaLogType == '1'">
 				<div class="dialog_img" v-for="(item,index) in comment_show_list" @mouseenter="item.is_del = true" @mouseleave="item.is_del = false">
 					<img class="img" :src="item.img_url">
 					<div class="modal" v-if="item.is_del == true">
@@ -103,15 +111,22 @@
 				</div>
 				<UploadFile file_type="1" @callbackFn="callbackFn" v-if="comment_show_list.length < 5"/>
 			</div>
+			<!-- 展示图片 -->
+			<div class="value" v-else>
+				<div class="dialog_img" v-for="item in orderDetail.eva_imgs">
+					<img class="img" :src="item">
+				</div>
+			</div>
 		</div>
 		<div class="dialog_row">
 			<div class="label">评论内容</div>
-			<el-input type="textarea" class="input_ele" :rows="3" placeholder="输入评论内容" v-model="comment_content">
+			<el-input type="textarea" class="input_ele" :rows="3" placeholder="输入评论内容" :disabled="diaLogType != '1'" v-model="comment_content">
 			</el-input>
 		</div>
 		<div class="dialog_row">
 			<div class="label">追评图片</div>
-			<div class="value">
+			<!-- 上传图片 -->
+			<div class="value" v-if="diaLogType == '1'">
 				<div class="dialog_img" v-for="(item,index) in zhui_show_list" @mouseenter="item.is_del = true" @mouseleave="item.is_del = false">
 					<img class="img" :src="item.img_url">
 					<div class="modal" v-if="item.is_del == true">
@@ -120,22 +135,22 @@
 				</div>
 				<UploadFile file_type="2" @callbackFn="callbackFn" v-if="zhui_show_list.length < 5"/>
 			</div>
+			<!-- 展示图片 -->
+			<div class="value" v-else>
+				<div class="dialog_img" v-for="item in orderDetail.add_eva_imgs">
+					<img class="img" :src="item">
+				</div>
+			</div>
 		</div>
 		<div class="dialog_row">
 			<div class="label">追评内容</div>
-			<el-input type="textarea" class="input_ele" :rows="3" placeholder="输入追评内容" v-model="zhui_content">
+			<el-input type="textarea" class="input_ele" :rows="3" placeholder="输入追评内容" :disabled="diaLogType != '1'" v-model="zhui_content">
 			</el-input>
 		</div>
-		<div class="dialog_row">
-			<div class="label">接单人</div>
-			<el-select v-model="those_orders" size="small" clearable :popper-append-to-body="false" placeholder="请选择">
-				<el-option v-for="item in those_orders_list" :key="item" :label="item" :value="item">
-				</el-option>
-			</el-select>
-		</div>
-		<div class="dialog_row">
+		<div class="dialog_row" v-if="diaLogType != '1'">
 			<div class="label">任务返图</div>
-			<div class="value">
+			<!-- 上传图片 -->
+			<div class="value" v-if="diaLogType == '4'">
 				<div class="dialog_img" v-for="(item,index) in fan_show_list" @mouseenter="item.is_del = true" @mouseleave="item.is_del = false">
 					<img class="img" :src="item.img_url">
 					<div class="modal" v-if="item.is_del == true">
@@ -144,17 +159,42 @@
 				</div>
 				<UploadFile file_type="3" @callbackFn="callbackFn" v-if="fan_show_list.length < 5"/>
 			</div>
+			<!-- 展示图片 -->
+			<div class="value" v-else>
+				<div class="dialog_img" v-for="item in orderDetail.return_imgs">
+					<img class="img" :src="item">
+				</div>
+			</div>
 		</div>
-		<div class="dialog_row">
+		<div class="dialog_row" v-if="diaLogType == '3'">
+			<div class="label">审核类型</div>
+			<el-radio-group v-model="type">
+				<el-radio label="1">通过</el-radio>
+				<el-radio label="2">拒绝</el-radio>
+			</el-radio-group>
+		</div>
+		<div class="dialog_row" v-if="type == '2'">
 			<div class="label">拒绝理由</div>
-			<el-input type="textarea" class="input_ele" :rows="3" placeholder="输入拒绝理由" v-model="reason_content">
+			<el-input type="textarea" class="input_ele" :rows="3" placeholder="输入拒绝理由" :disabled="diaLogType == '2'" v-model="reason_content">
 			</el-input>
 		</div>
 		<div slot="footer" class="dialog-footer">
-			<el-button type="primary" size="small">取消</el-button>
-			<el-button type="primary" size="small">确认</el-button>
+			<el-button type="primary" size="small" @click="showDialog = false">取消</el-button>
+			<el-button type="primary" size="small" class="mmm" data-clipboard-target="#mmm" v-if="role_id == '3'" @click="copyContent">一键复制</el-button>
+			<el-button type="primary" size="small" @click="submit" v-if="diaLogType != '2'">提交</el-button>
 		</div>
 	</el-dialog>
+	<!-- 需要复制的内容 -->
+	<div class="m_box" id="mmm">
+		<div>评论图片：</div>
+		<img class="img" :src="item" v-for="item in orderDetail.eva_imgs">
+		<div>评论内容：</div>
+		<div>{{comment_content}}</div>
+		<div>追评图片：</div>
+		<img class="img" :src="item" v-for="item in orderDetail.add_eva_imgs">
+		<div>追评内容：</div>
+		<div>{{zhui_content}}</div>
+	</div>
 </div>
 </template>
 <style lang="less" scoped>
@@ -202,18 +242,46 @@
 		width: 380px;
 	}
 }
+.m_box{
+	position: absolute;
+	width: 0;
+	height: 0;
+	opacity: 0;
+}
 </style>
 <script>
+	import resource from '../../api/resource.js'
 	import UploadFile from '../../components/upload_file.vue'
+	import Clipboard from 'clipboard'
 	export default{
 		data(){
 			return{
+				role_id:"",
 				store_list:[],								//店铺名称
-				select_store_list:[],						//选中的店铺名称
-				code:'',									//编号
+				shop_id:'',									//选中的店铺名称
 				goods_id:'',								//商品ID
-				status_list:[],								//评价状态
-				select_status_list:[],						//选中的评价状态
+				order_sn:"",
+				ww:"",
+				status_list:[{
+					id:'1',
+					name:'待邀请'
+				},{
+					id:'2',
+					name:'已邀请'
+				},{
+					id:'3',
+					name:'待审核'
+				},{
+					id:'4',
+					name:'审核通过'
+				},{
+					id:'5',
+					name:'审核拒绝'
+				},{
+					id:'6',
+					name:'评价失败'
+				}],											//评价状态
+				status:'',									//选中的评价状态
 				pickerOptions: {
 					shortcuts: [{
 						text: '当月',
@@ -241,7 +309,13 @@
 				order_date:[],								//订单日期
 				start_time:"",								//开始时间
 				end_time:"",								//结束时间
-				showDialog:true,							//默认弹框不显示
+				pagesize:10,
+				page:1,
+				dataObj:{},									//评价返回数据
+				showDialog:false,							//默认弹框不显示
+				diaLogType:'1',								//弹框类型（1:邀请；2:查看；3:审核；4:编辑）
+				dialog_title:"邀请评价",
+				orderDetail:{},								//评价任务详情
 				comment_show_list:[],						//评论图片数组(展示)
 				comment_pass_list:[],						//评论图片数组(传递)
 				zhui_show_list:[],							//追评图片数组(展示)
@@ -250,15 +324,119 @@
 				fan_pass_list:[],							//返图图片数组(传递)
 				comment_content:"",							//评论内容
 				zhui_content:"",							//追评内容
+				type:'1',									//审核类型（1:通过；2:拒绝）
 				reason_content:"",							//拒绝理由
-				those_orders_list:['彪子','老王'],			//所有的接单人
-				those_orders:"",							//选中的接单人
-
 			}
 		},
+		created(){
+			this.role_id =localStorage.getItem("role_id");
+			//获取店铺列表
+			this.shopList();
+			//评价列表
+			this.orderList();
+		},
+		watch:{
+			//订单日期
+			order_date:function(n){
+				this.start_time = n && n.length> 0?n[0]:"";
+				this.end_time = n && n.length> 0?n[1]:"";
+			},
+			//弹框类型
+			diaLogType:function(n){
+				if(n == '1'){
+					this.dialog_title = '邀请评价';
+				}else if(n == '2'){
+					this.dialog_title = '查看';
+				}else if(n == '3'){
+					this.dialog_title = '审核';
+				}else if(n == '4'){
+					this.dialog_title = '提交任务';
+				}
+			},
+			//审核类型
+			type:function(n){
+				if(n == '1'){
+					this.reason_content = "";
+				}
+			},
+		},
 		methods:{
-			getList(){
-
+			//获取店铺列表
+			shopList(){
+				resource.shopList().then(res =>{
+					if(res.data.code == 1){
+						this.store_list = res.data.data;
+					}else{
+						this.$message.warning(res.data.msg);
+					}
+				})
+			},
+			//点击搜索
+			searchFun(){
+				this.page = 1;
+				//评价列表
+				this.orderList();
+			},
+			//评价列表
+			orderList(){
+				let arg = {
+					status:this.status == ''?'0':this.status,
+					shop_id:this.shop_id == ''?'0':this.shop_id,
+					goods_id:this.goods_id,
+					order_sn:this.order_sn,
+					ww:this.ww,
+					order_time_start:this.start_time,
+					order_time_end:this.end_time,
+					page:this.page,
+					pagesize:this.pagesize
+				}
+				resource.orderList(arg).then(res => {
+					if(res.data.code == 1){
+						this.dataObj = res.data.data;
+					}else{
+						this.$message.warning(res.data.msg);
+					}
+				})
+			},
+			//分页
+			handleSizeChange(val) {
+				this.pagesize = val;
+				//获取列表
+				this.orderList();
+			},
+			handleCurrentChange(val) {
+				this.page = val;
+				//获取列表
+				this.orderList();
+			},
+			//获取任务详情
+			getOrderDetail(diaLogType,order_id){
+				resource.getOrderDetail({order_id:order_id}).then(res => {
+					if(res.data.code == 1){
+						this.orderDetail = res.data.data;
+						this.diaLogType = diaLogType;
+						//评论内容
+						this.comment_content = this.orderDetail.eva_content;
+						//追评内容
+						this.zhui_content = this.orderDetail.add_eva_content;
+						this.showDialog = true;
+					}else{
+						this.$message.warning(res.data.msg);
+					}
+				})
+			},
+			//关闭弹框的回调
+			closeDialog(){
+				this.orderDetail = {};
+				this.comment_show_list = [];						//评论图片数组(展示)
+				this.comment_pass_list = [];						//评论图片数组(传递)
+				this.zhui_show_list = [];						//追评图片数组(展示)
+				this.zhui_pass_list = [];						//追评图片数组(传递)
+				this.fan_show_list = [];						//返图图片数组(展示)
+				this.fan_pass_list = [];							//返图图片数组(传递)
+				this.comment_content = "";
+				this.zhui_content = "";
+				this.reason_content = "";
 			},
 			//上传图片
 			callbackFn(v){
@@ -267,8 +445,19 @@
 				if((file_type == '1' && (this.comment_show_list.length + files.length > 5)) || (file_type == '2' && (this.zhui_show_list.length + files.length > 5)) || (file_type == '3' && (this.fan_show_list.length + files.length > 5))){
 					this.$message.warning('图片不能超过5张！');
 				}else{
-					for(var i = 0;i < files.length;i ++){		
-						let fr = new FileReader();
+					
+					for(var i = 0;i < files.length;i ++){
+						if(file_type == '1'){	//1:评论图片
+							//传递的图片对象
+							this.comment_pass_list.push(files[i]);	
+						}else if(file_type == '2'){	//2:追评图片
+							//传递的图片对象
+							this.zhui_pass_list.push(files[i]);	
+							}else if(file_type == '3'){	//3:任务返图
+							//传递的图片对象
+							this.fan_pass_list.push(files[i]);	
+						}	
+						var fr = new FileReader();
 						fr.onload = (e) => {
 							let show_list_obj = {
 								img_url:e.target.result,
@@ -278,20 +467,13 @@
 							if(file_type == '1'){	//1:评论图片
 								//预览的图片地址
 								this.comment_show_list.push(show_list_obj);
-								//传递的图片对象
-								this.comment_pass_list.push(files[i]);	
 							}else if(file_type == '2'){	//2:追评图片
 								//预览的图片地址
 								this.zhui_show_list.push(show_list_obj);
-								//传递的图片对象
-								this.zhui_pass_list.push(files[i]);	
 							}else if(file_type == '3'){	//3:任务返图
 								//预览的图片地址
-								this.fan_show_list.push(show_list_obj);
-								//传递的图片对象
-								this.fan_pass_list.push(files[i]);	
+								this.fan_show_list.push(show_list_obj);	
 							}
-
 						};
 						fr.readAsDataURL(files[i]);
 					}
@@ -308,6 +490,137 @@
 				}else if(file_type == '3'){	//3:任务返图
 					this.fan_show_list.splice(index,1);
 					this.fan_pass_list.splice(index,1);
+				}
+			},
+			//复制评论内容
+			copyContent (type) {
+				var clipboard = new Clipboard(".mmm");
+				clipboard.on('success', e => {
+					this.$message.success('复制成功');
+				})
+				clipboard.on('error', e =>{
+     				// 不支持复制
+     				this.$message.warning('该浏览器不支持复制')
+     			})
+			},
+			//点击取消任务
+			cancelOrder(order_id){
+				this.$prompt('输入取消原因', '提示', {
+					confirmButtonText: '确定',
+					cancelButtonText: '取消'
+				}).then(({ value }) => {
+					let arg = {
+						order_id:order_id,
+						reason:value
+					}
+					resource.cancelEvaluate(arg).then(res => {
+						if(res.data.code == 1){
+							this.$message.success(res.data.msg);
+							this.orderList();
+						}else{
+							this.$message.warning(res.data.msg);
+						}
+					})
+				}).catch(() => {
+					this.$message({
+						type: 'info',
+						message: '取消输入'
+					});       
+				});
+			},
+			//更换订单
+			replaceOrder(order_id){
+				this.$prompt('输入订单编号', '提示', {
+					confirmButtonText: '确定',
+					cancelButtonText: '取消'
+				}).then(({ value }) => {
+					if(!value){
+						this.$message.warning('请输入订单编号!');
+					}else{
+						let arg = {
+							order_id:order_id,
+							new_order_sn:value
+						}
+						resource.replaceOrder(arg).then(res => {
+							if(res.data.code == 1){
+								this.$message.success(res.data.msg);
+								this.orderList();
+							}else{
+								this.$message.warning(res.data.msg);
+							}
+						})
+					}
+				}).catch(() => {
+					this.$message({
+						type: 'info',
+						message: '取消'
+					});       
+				});
+			},
+			//确认
+			submit(){
+				if(this.diaLogType == '1'){				//邀请
+					if(!this.comment_content){
+						this.$message.warning('请输入评价内容');
+						return;
+					}
+					var arg = {
+						order_id:this.orderDetail.order_id,
+						eva_content:this.comment_content,
+						add_eva_content:this.zhui_content
+					}
+					this.comment_pass_list.map((item,index) => {
+						let kk = 'eva_img_' + (index + 1);
+						arg[kk] = item;
+					});
+					this.zhui_pass_list.map((item,index) => {
+						let kk = 'add_eva_img_' + (index + 1);
+						arg[kk] = item;
+					})
+					resource.invitationEvaluate(arg).then(res => {
+						if(res.data.code == 1){
+							this.$message.success(res.data.msg);
+							this.showDialog = false;
+							//评价列表
+							this.orderList();
+						}else{
+							this.$message.warning(res.data.msg);
+						}
+					})
+				}else if(this.diaLogType == '3'){		//审核
+					let arg = {
+						order_id:this.orderDetail.order_id,
+						type:this.type,
+						reason:this.type == '1'?'':this.reason_content
+					}
+					resource.auditEvaluate(arg).then(res => {
+						this.$message.success(res.data.msg);
+						this.showDialog = false;
+						//评价列表
+						this.orderList();
+					})
+				}else if(this.diaLogType == '4'){		//编辑
+					if(this.fan_pass_list.length == 0){
+						this.$message.warning('至少上传一张评价返图！');
+						return;
+					}
+					var arg = {
+						order_id:this.orderDetail.order_id
+					}
+					this.fan_pass_list.map((item,index) => {
+						let kk = 'return_img_' + (index + 1);
+						arg[kk] = item;
+					});
+					resource.returnEvaluate(arg).then(res => {
+						if(res.data.code == 1){
+							this.$message.success(res.data.msg);
+							this.showDialog = false;
+							//评价列表
+							this.orderList();
+						}else{
+							this.$message.warning(res.data.msg);
+						}
+					})
 				}
 			}
 		},
