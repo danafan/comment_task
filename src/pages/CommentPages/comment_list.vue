@@ -1,6 +1,9 @@
 <template>
 	<div>
 		<el-form :inline="true" size="small" class="demo-form-inline">
+			<el-form-item label="管理员:" style="margin-right: 20px">
+				<el-input clearable placeholder="输入管理员" v-model="admin_name"></el-input>
+			</el-form-item>
 			<el-form-item label="店铺名称:" style="margin-right: 20px">
 				<el-select v-model="shop_id" clearable filterable :popper-append-to-body="false"placeholder="全部">
 					<el-option v-for="item in store_list" :key="item.shop_id" :label="item.shop_name" :value="item.shop_id">
@@ -26,14 +29,26 @@
 				<el-date-picker v-model="order_date" type="daterange" unlink-panels value-format="yyyy-MM-dd" range-separator="至" start-placeholder="开始日期" end-placeholder="结束日期" :append-to-body="false" :picker-options="pickerOptions">
 				</el-date-picker>
 			</el-form-item>
+			<el-form-item label="邀请日期:" style="margin-right: 20px">
+				<el-date-picker v-model="invitation_date" type="daterange" unlink-panels value-format="yyyy-MM-dd" range-separator="至" start-placeholder="开始日期" end-placeholder="结束日期" :append-to-body="false" :picker-options="pickerOptions">
+				</el-date-picker>
+			</el-form-item>
+			<el-form-item label="提交日期:" style="margin-right: 20px">
+				<el-date-picker v-model="commit_date" type="daterange" unlink-panels value-format="yyyy-MM-dd" range-separator="至" start-placeholder="开始日期" end-placeholder="结束日期" :append-to-body="false" :picker-options="pickerOptions">
+				</el-date-picker>
+			</el-form-item>
 			<el-form-item>
 				<el-button type="primary" size="small" @click="searchFun">搜索</el-button>
 			</el-form-item>
 		</el-form>
+		<div class="buts">
+			<el-button type="primary" plain size="small" @click="exportFile">导出<i class="el-icon-download el-icon--right"></i></el-button>
+		</div>
 		<el-table size="small" :data="dataObj.data" tooltip-effect="dark" style="width: 100%" :header-cell-style="{'background':'#f4f4f4'}">
 			<el-table-column align="center" :width="160" property="order_id" label="编号"></el-table-column>
 			<el-table-column align="center" :width="160" property="goods_id" label="商品ID"></el-table-column>
 			<el-table-column align="center" :width="160" property="ww" label="旺旺号"></el-table-column>
+			<el-table-column align="center" :width="160" property="admin_name" label="管理员"></el-table-column>
 			<el-table-column align="center" :width="160" property="order_sn" label="订单号"></el-table-column>
 			<el-table-column align="center" :width="160" property="shop_name" label="店铺"></el-table-column>
 			<el-table-column align="center" :width="160" property="order_time" label="订单日期"></el-table-column>
@@ -74,6 +89,18 @@
 		<div class="dialog_row">
 			<div class="label">订单日期</div>
 			<div class="value">{{orderDetail.order_time}}</div>
+		</div>
+		<div class="dialog_row" v-if="orderDetail.status > 1">
+			<div class="label">邀请时间</div>
+			<div class="value">{{orderDetail.invitation_time}}</div>
+		</div>
+		<div class="dialog_row" v-if="orderDetail.status > 2">
+			<div class="label">提交时间</div>
+			<div class="value">{{orderDetail.submit_time}}</div>
+		</div>
+		<div class="dialog_row" v-if="orderDetail.status > 3">
+			<div class="label">完成时间</div>
+			<div class="value">{{orderDetail.finish_time}}</div>
 		</div>
 		<div class="dialog_row">
 			<div class="label">编号</div>
@@ -248,16 +275,25 @@
 	height: 0;
 	opacity: 0;
 }
+.buts{
+	margin-bottom: 15px;
+	display: flex;
+	align-items: center;
+	justify-content: flex-end;
+}
+
 </style>
 <script>
 	import resource from '../../api/resource.js'
 	import UploadFile from '../../components/upload_file.vue'
 	import Clipboard from 'clipboard'
+	import {exportUp} from '../../api/export.js'
 	export default{
 		data(){
 			return{
 				role_id:"",
 				store_list:[],								//店铺名称
+				admin_name:"",								//管理员
 				shop_id:'',									//选中的店铺名称
 				goods_id:'',								//商品ID
 				order_sn:"",
@@ -309,6 +345,12 @@
 				order_date:[],								//订单日期
 				start_time:"",								//开始时间
 				end_time:"",								//结束时间
+				invitation_date:[],							//邀请日期
+				invitation_time_start:"",
+				invitation_time_end:"",	
+				commit_date:[],								//提交日期
+				submit_time_start:"",
+				submit_time_end:"",
 				pagesize:10,
 				page:1,
 				dataObj:{},									//评价返回数据
@@ -341,6 +383,16 @@
 				this.start_time = n && n.length> 0?n[0]:"";
 				this.end_time = n && n.length> 0?n[1]:"";
 			},
+			//邀请日期
+			invitation_date:function(n){
+				this.invitation_time_start = n && n.length> 0?n[0]:"";
+				this.invitation_time_end = n && n.length> 0?n[1]:"";
+			},
+			//提交日期
+			commit_date:function(n){
+				this.submit_time_start = n && n.length> 0?n[0]:"";
+				this.submit_time_end = n && n.length> 0?n[1]:"";
+			},
 			//弹框类型
 			diaLogType:function(n){
 				if(n == '1'){
@@ -361,6 +413,29 @@
 			},
 		},
 		methods:{
+			//导出
+			exportFile(){
+				var arr = [];
+				let arg = {
+					admin_name:this.admin_name,
+					status:this.status == ''?'0':this.status,
+					shop_id:this.shop_id == ''?'0':this.shop_id,
+					goods_id:this.goods_id,
+					order_sn:this.order_sn,
+					ww:this.ww,
+					order_time_start:this.start_time,
+					order_time_end:this.end_time,
+					invitation_time_start:this.invitation_time_start,
+					invitation_time_end:this.invitation_time_end,
+					submit_time_start:this.submit_time_start,
+					submit_time_end:this.submit_time_end,
+				}
+				for(var item in arg){
+					let str = item + '=' + arg[item];
+					arr.push(str);
+				};
+				exportUp(`order/exportorderlist?${arr.join('&')}`)
+			},
 			//获取店铺列表
 			shopList(){
 				resource.shopList().then(res =>{
@@ -380,6 +455,7 @@
 			//评价列表
 			orderList(){
 				let arg = {
+					admin_name:this.admin_name,
 					status:this.status == ''?'0':this.status,
 					shop_id:this.shop_id == ''?'0':this.shop_id,
 					goods_id:this.goods_id,
@@ -387,6 +463,10 @@
 					ww:this.ww,
 					order_time_start:this.start_time,
 					order_time_end:this.end_time,
+					invitation_time_start:this.invitation_time_start,
+					invitation_time_end:this.invitation_time_end,
+					submit_time_start:this.submit_time_start,
+					submit_time_end:this.submit_time_end,
 					page:this.page,
 					pagesize:this.pagesize
 				}
