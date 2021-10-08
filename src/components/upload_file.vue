@@ -2,8 +2,11 @@
 	<div>
 		<div class="imgBox">
 			<img class="upload_icon" src="../static/upload_icon.png">
-			<div class="upload_text">点击上传文件</div>
-			<input type="file" ref="imgUpload" class="upload_file" :multiple="is_multiple" @change="uploadFn">
+			<div class="upload_text">点击上传{{is_video?'视频':'图片'}}</div>
+			<!-- 上传视频 -->
+			<input v-if="is_video" type="file" ref="imgUpload" class="upload_file" accept="video/*" capture="camcorder" @change="uploadFn">
+			<!-- 上传图片 -->
+			<input v-else type="file" ref="imgUpload" class="upload_file" accept="image/*" :multiple="is_multiple" @change="uploadFn">
 		</div>
 	</div>
 </template>
@@ -47,7 +50,11 @@
 			file_type:{
 				type:String,
 				default:''
-			}
+			},
+			is_video:{
+				type:Boolean,
+				default:false
+			},
 		},
 		methods:{
 			// 上传图片

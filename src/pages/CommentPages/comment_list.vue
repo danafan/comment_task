@@ -52,6 +52,7 @@
 			<el-table-column align="center" :width="160" property="order_sn" label="订单号"></el-table-column>
 			<el-table-column align="center" :width="160" property="shop_name" label="店铺"></el-table-column>
 			<el-table-column align="center" :width="160" property="order_time" label="订单日期"></el-table-column>
+			<el-table-column align="center" :width="160" property="invitation_time" label="邀请时间"></el-table-column>
 			<el-table-column align="center" :width="160" property="status_name" label="任务状态"></el-table-column>
 			<el-table-column align="center" :width="160" property="fail_reason" label="原因">
 			</el-table-column>
@@ -142,6 +143,25 @@
 			<div class="value" v-else>
 				<div class="dialog_img" v-for="item in orderDetail.eva_imgs">
 					<img class="img" :src="item">
+				</div>
+			</div>
+		</div>
+		<div class="dialog_row">
+			<div class="label">评论视频</div>
+			<!-- 上传视频 -->
+			<div class="value" v-if="diaLogType == '1'">
+				<UploadFile :is_video="true" @callbackFn="uploadVideo" v-if="video_data == ''"/>
+				<div class="dialog_img" v-else @mouseenter="del_video = true" @mouseleave="del_video = false">
+					<video class="img" controls autoplay :src="video_data"></video>
+					<div class="modal" v-if="del_video == true">
+						<img src="../../static/deleteImg.png" @click="delVideo">
+					</div>
+				</div>
+			</div>
+			<!-- 展示视频 -->
+			<div class="value" v-else>
+				<div class="dialog_img">
+					<video class="img" controls autoplay :src="video_data"></video>
 				</div>
 			</div>
 		</div>
@@ -364,6 +384,9 @@
 				zhui_pass_list:[],							//追评图片数组(传递)
 				fan_show_list:[],							//返图图片数组(展示)
 				fan_pass_list:[],							//返图图片数组(传递)
+				video_data:'',								//视频地址
+				video_arg:{},								//上传的视频文件
+				del_video:false,							//删除视频文件弹框
 				comment_content:"",							//评论内容
 				zhui_content:"",							//追评内容
 				type:'1',									//审核类型（1:通过；2:拒绝）
@@ -499,6 +522,10 @@
 						this.comment_content = this.orderDetail.eva_content;
 						//追评内容
 						this.zhui_content = this.orderDetail.add_eva_content;
+						//评论图片
+						if(this.orderDetail.eva_videos.length > 0){
+							this.video_data = this.orderDetail.eva_videos[0];
+						}
 						this.showDialog = true;
 					}else{
 						this.$message.warning(res.data.msg);
@@ -517,6 +544,23 @@
 				this.comment_content = "";
 				this.zhui_content = "";
 				this.reason_content = "";
+				this.video_data = "";
+				this.video_arg = {};
+			},
+			//上传视频
+			uploadVideo(e){
+				this.video_arg = e.files[0];
+				var fr = new FileReader();
+				fr.readAsDataURL(this.video_arg);
+				fr.onload = (e) => {
+					this.video_data = e.target.result;
+				};
+			},
+			//删除视频
+			delVideo(){
+				this.video_data = '';
+				this.video_arg = {};
+				this.del_video = false;
 			},
 			//上传图片
 			callbackFn(v){
@@ -525,7 +569,6 @@
 				if((file_type == '1' && (this.comment_show_list.length + files.length > 5)) || (file_type == '2' && (this.zhui_show_list.length + files.length > 5)) || (file_type == '3' && (this.fan_show_list.length + files.length > 5))){
 					this.$message.warning('图片不能超过5张！');
 				}else{
-					
 					for(var i = 0;i < files.length;i ++){
 						if(file_type == '1'){	//1:评论图片
 							//传递的图片对象
@@ -647,7 +690,8 @@
 					var arg = {
 						order_id:this.orderDetail.order_id,
 						eva_content:this.comment_content,
-						add_eva_content:this.zhui_content
+						add_eva_content:this.zhui_content,
+						eva_video_1:this.video_arg
 					}
 					this.comment_pass_list.map((item,index) => {
 						let kk = 'eva_img_' + (index + 1);
@@ -657,6 +701,7 @@
 						let kk = 'add_eva_img_' + (index + 1);
 						arg[kk] = item;
 					})
+					console.log(arg);
 					resource.invitationEvaluate(arg).then(res => {
 						if(res.data.code == 1){
 							this.$message.success(res.data.msg);
