@@ -161,7 +161,7 @@
 			<!-- 展示视频 -->
 			<div class="value" v-else>
 				<div class="dialog_img">
-					<video class="img" controls autoplay :src="video_data"></video>
+					<video class="img" controls autoplay :src="video_data" v-if="video_data != ''"></video>
 				</div>
 			</div>
 		</div>
