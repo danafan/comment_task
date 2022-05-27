@@ -65,6 +65,7 @@
 						<el-button type="text" size="small" @click="getOrderDetail('3',scope.row.order_id)" v-if="scope.row.status == '3'">审核</el-button>
 					</div>
 					<div v-if="role_id == '3'">
+						<el-button type="text" size="small" @click="returnMoney(scope.row.order_id)" v-if="scope.row.status == '4' && scope.row.is_payment == 0">返款</el-button>
 						<el-button type="text" size="small" @click="replaceOrder(scope.row.order_id)" v-if="scope.row.status == '2'">更换订单</el-button>
 						<el-button type="text" size="small" @click="getOrderDetail('4',scope.row.order_id)" v-if="scope.row.status == '2'">提交任务</el-button>
 						<el-button type="text" size="small" @click="getOrderDetail('2',scope.row.order_id)" v-if="scope.row.status != '1' && scope.row.status != '2'">查看</el-button>
@@ -242,6 +243,17 @@
 		<div>追评内容：</div>
 		<div>{{zhui_content}}</div>
 	</div>
+	<!-- 返款 -->
+	<el-dialog title="确认返款" :visible.sync="fk_model">
+		<el-radio-group v-model="fk_type">
+			<el-radio :label="1">返款给会员支付宝</el-radio>
+			<el-radio :label="2">返管理员支付宝</el-radio>
+		</el-radio-group>
+		<div slot="footer" class="dialog-footer">
+			<el-button size="small" @click="fk_model = false">取消</el-button>
+			<el-button size="small" type="primary" @click="confirmFk">确认</el-button>
+		</div>
+	</el-dialog>
 </div>
 </template>
 <style lang="less" scoped>
@@ -301,7 +313,9 @@
 	align-items: center;
 	justify-content: flex-end;
 }
+.select_box{
 
+}
 </style>
 <script>
 	import resource from '../../api/resource.js'
@@ -391,6 +405,9 @@
 				zhui_content:"",							//追评内容
 				type:'1',									//审核类型（1:通过；2:拒绝）
 				reason_content:"",							//拒绝理由
+				fk_model:false,	//返款弹窗
+				fk_type:1,			//返款路径
+				order_id:"",			
 			}
 		},
 		created(){
@@ -511,6 +528,27 @@
 				this.page = val;
 				//获取列表
 				this.orderList();
+			},
+			//返款
+			returnMoney(order_id){
+				this.fk_model = true;
+				this.order_id = order_id;
+			},
+			//确认返款
+			confirmFk(){
+				let arg = {
+					order_id:this.order_id,
+					type:this.fk_type
+				}
+				resource.paymentEvaluate(arg).then(res => {
+					if(res.data.code == 1){
+						this.$message.success(res.data.msg);
+						//获取列表
+						this.orderList();
+					}else{
+						this.$message.warning(res.data.msg);
+					}
+				})
 			},
 			//获取任务详情
 			getOrderDetail(diaLogType,order_id){
@@ -701,7 +739,6 @@
 						let kk = 'add_eva_img_' + (index + 1);
 						arg[kk] = item;
 					})
-					console.log(arg);
 					resource.invitationEvaluate(arg).then(res => {
 						if(res.data.code == 1){
 							this.$message.success(res.data.msg);
@@ -729,14 +766,14 @@
 						this.$message.warning('至少上传一张评价返图！');
 						return;
 					}
-					var arg = {
+					var args = {
 						order_id:this.orderDetail.order_id
 					}
 					this.fan_pass_list.map((item,index) => {
 						let kk = 'return_img_' + (index + 1);
-						arg[kk] = item;
+						args[kk] = item;
 					});
-					resource.returnEvaluate(arg).then(res => {
+					resource.returnEvaluate(args).then(res => {
 						if(res.data.code == 1){
 							this.$message.success(res.data.msg);
 							this.showDialog = false;
