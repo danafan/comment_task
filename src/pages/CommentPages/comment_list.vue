@@ -246,8 +246,8 @@
 	<!-- 返款 -->
 	<el-dialog title="确认返款" :visible.sync="fk_model">
 		<el-radio-group v-model="fk_type">
-			<el-radio :label="1">返款给会员支付宝</el-radio>
 			<el-radio :label="2">返管理员支付宝</el-radio>
+			<el-radio :label="1">返款给会员支付宝</el-radio>
 		</el-radio-group>
 		<div slot="footer" class="dialog-footer">
 			<el-button size="small" @click="fk_model = false">取消</el-button>
@@ -406,7 +406,7 @@
 				type:'1',									//审核类型（1:通过；2:拒绝）
 				reason_content:"",							//拒绝理由
 				fk_model:false,	//返款弹窗
-				fk_type:1,			//返款路径
+				fk_type:2,			//返款路径
 				order_id:"",			
 			}
 		},
