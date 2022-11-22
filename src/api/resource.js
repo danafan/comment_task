@@ -11,6 +11,7 @@ let path = {
 	cancelEvaluate:'order/cancelevaluate',				//取消评价
 	replaceOrder:'order/replaceorder',					//更换订单
 	paymentEvaluate:'order/paymentevaluate',			//确认返款
+	paymentEvaluateBatch:'order/paymentevaluatebatch',	//批量返款
 
 }
 export default{
@@ -57,6 +58,10 @@ export default{
 	//确认返款
 	paymentEvaluate(params){
 		return http.post(path.paymentEvaluate, params)
+	},
+	//批量返款
+	paymentEvaluateBatch(params){
+		return http.post(path.paymentEvaluateBatch, params)
 	},
 }
 

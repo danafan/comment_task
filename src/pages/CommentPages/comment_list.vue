@@ -48,9 +48,12 @@
 			</el-form-item>
 		</el-form>
 		<div class="buts">
+			<el-button type="primary" plain size="small" @click="returnMoney('all')">批量返款</el-button>
 			<el-button type="primary" plain size="small" @click="exportFile">导出<i class="el-icon-download el-icon--right"></i></el-button>
 		</div>
-		<el-table size="small" :data="dataObj.data" tooltip-effect="dark" style="width: 100%" :header-cell-style="{'background':'#f4f4f4'}">
+		<el-table size="small" :data="dataObj.data" tooltip-effect="dark" style="width: 100%" :header-cell-style="{'background':'#f4f4f4'}" @selection-change="handleSelectionChange">
+			<el-table-column type="selection" width="55" fixed :selectable="checkboxInit">
+			</el-table-column>
 			<el-table-column align="center" :width="160" property="order_id" label="编号"></el-table-column>
 			<el-table-column align="center" :width="160" property="goods_id" label="商品ID"></el-table-column>
 			<el-table-column align="center" :width="160" property="ww" label="旺旺号"></el-table-column>
@@ -71,7 +74,7 @@
 						<el-button type="text" size="small" @click="getOrderDetail('3',scope.row.order_id)" v-if="scope.row.status == '3'">审核</el-button>
 					</div>
 					<div v-if="role_id == '3'">
-						<el-button type="text" size="small" @click="returnMoney(scope.row.order_id)" v-if="scope.row.status == '4' && scope.row.is_payment == 0">返款</el-button>
+						<el-button type="text" size="small" @click="returnMoney('one',scope.row.order_id)" v-if="scope.row.status == '4' && scope.row.is_payment == 0">返款</el-button>
 						<el-button type="text" size="small" @click="replaceOrder(scope.row.order_id)" v-if="scope.row.status == '2'">更换订单</el-button>
 						<el-button type="text" size="small" @click="getOrderDetail('4',scope.row.order_id)" v-if="scope.row.status == '2'">提交任务</el-button>
 						<el-button type="text" size="small" @click="getOrderDetail('2',scope.row.order_id)" v-if="scope.row.status != '1' && scope.row.status != '2'">查看</el-button>
@@ -251,10 +254,20 @@
 	</div>
 	<!-- 返款 -->
 	<el-dialog title="确认返款" :visible.sync="fk_model">
-		<el-radio-group v-model="fk_type">
-			<el-radio :label="2">返管理员支付宝</el-radio>
-			<el-radio :label="1">返款给会员支付宝</el-radio>
-		</el-radio-group>
+		<el-form size="small">
+			<el-form-item label="返款路径:">
+				<el-radio-group v-model="fk_type">
+					<el-radio :label="2">返管理员支付宝</el-radio>
+					<el-radio :label="1">返款给会员支付宝</el-radio>
+				</el-radio-group>
+			</el-form-item>
+			<el-form-item label="合并返款:" v-if="fk_type == 2 && back_type == 'all'">
+				<el-radio-group v-model="is_merge">
+					<el-radio :label="1">是</el-radio>
+					<el-radio :label="0">否</el-radio>
+				</el-radio-group>
+			</el-form-item>
+		</el-form>
 		<div slot="footer" class="dialog-footer">
 			<el-button size="small" @click="fk_model = false">取消</el-button>
 			<el-button size="small" type="primary" @click="confirmFk">确认</el-button>
@@ -414,7 +427,10 @@
 				reason_content:"",							//拒绝理由
 				fk_model:false,	//返款弹窗
 				fk_type:2,			//返款路径
+				is_merge:1,			//是否合并返款
 				order_id:"",			
+				back_type:"",				//返款类型
+				multiple_selection:[],		//多选的列表
 			}
 		},
 		created(){
@@ -527,6 +543,18 @@
 					}
 				})
 			},
+			//切换多选
+			handleSelectionChange(val) {
+				this.multiple_selection = val;
+			},
+			//设置不可勾选
+			checkboxInit(row) {
+				if(this.role_id == '3' && row.is_payment == 0 && row.status == 4) { 
+					return 1;
+				} else { 
+					return 0
+				}
+			},
 			//分页
 			handleSizeChange(val) {
 				this.pagesize = val;
@@ -539,25 +567,60 @@
 				this.orderList();
 			},
 			//返款
-			returnMoney(order_id){
+			returnMoney(type,order_id){
+				this.back_type = type;
+				if(this.back_type == 'one'){
+					this.order_id = order_id;
+				}else{
+					if(this.multiple_selection.length == 0){
+						this.$message.warning('请至少选择一条!');
+						return;
+					}else{
+						let order_ids = [];
+						this.multiple_selection.map(item => {
+							order_ids.push(item.order_id);
+						})
+						this.order_id = order_ids;
+					}
+				}
 				this.fk_model = true;
-				this.order_id = order_id;
 			},
 			//确认返款
 			confirmFk(){
-				let arg = {
-					order_id:this.order_id,
-					type:this.fk_type
-				}
-				resource.paymentEvaluate(arg).then(res => {
-					if(res.data.code == 1){
-						this.$message.success(res.data.msg);
-						//获取列表
-						this.orderList();
-					}else{
-						this.$message.warning(res.data.msg);
+				if(this.back_type == 'one'){
+					let arg = {
+						order_id:this.order_id,
+						type:this.fk_type
 					}
-				})
+					resource.paymentEvaluate(arg).then(res => {
+						if(res.data.code == 1){
+							this.$message.success(res.data.msg);
+							this.fk_model = false;
+							//获取列表
+							this.orderList();
+						}else{
+							this.$message.warning(res.data.msg);
+						}
+					})
+				}else{
+					let arg = {
+						order_ids:this.order_id,
+						type:this.fk_type
+					}
+					if(this.fk_type == 2){
+						arg.is_merge = this.is_merge;
+					}
+					resource.paymentEvaluateBatch(arg).then(res => {
+						if(res.data.code == 1){
+							this.$message.success(res.data.msg);
+							this.fk_model = false;
+							//获取列表
+							this.orderList();
+						}else{
+							this.$message.warning(res.data.msg);
+						}
+					})
+				}
 			},
 			//获取任务详情
 			getOrderDetail(diaLogType,order_id){
