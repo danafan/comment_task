@@ -51,7 +51,7 @@
 			<el-button type="primary" plain size="small" @click="returnMoney('all')">批量返款</el-button>
 			<el-button type="primary" plain size="small" @click="exportFile">导出<i class="el-icon-download el-icon--right"></i></el-button>
 		</div>
-		<el-table size="small" :data="dataObj.data" tooltip-effect="dark" style="width: 100%" :header-cell-style="{'background':'#f4f4f4'}" @selection-change="handleSelectionChange">
+		<el-table size="small" :data="dataObj.data" tooltip-effect="dark" style="width: 100%" max-height="600" :header-cell-style="{'background':'#f4f4f4'}" @selection-change="handleSelectionChange">
 			<el-table-column type="selection" width="55" fixed :selectable="checkboxInit">
 			</el-table-column>
 			<el-table-column align="center" :width="160" property="order_id" label="编号"></el-table-column>
@@ -89,7 +89,7 @@
 			@current-change="handleCurrentChange"
 			:current-page="page"
 			:pager-count="11"
-			:page-sizes="[5, 10, 15, 20]"
+			:page-sizes="[5, 10, 15, 20,50,100]"
 			layout="total, sizes, prev, pager, next, jumper"
 			:total="dataObj.total"
 			>
@@ -331,9 +331,6 @@
 	display: flex;
 	align-items: center;
 	justify-content: flex-end;
-}
-.select_box{
-
 }
 </style>
 <script>

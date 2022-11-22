@@ -51,6 +51,8 @@
 	left: 0;
 	width: 100%;
 	height: 100%;
+	display:flex;
+	flex-direction: column;
 	.header{
 		background:#fff !important;
 		display: flex;
@@ -92,7 +94,7 @@
 		border: none !important;
 	}
 	.content_box{
-		height: 600px;
+		flex:1;
 		.left_box{
 			background: #ffffff;
 			display: flex;
@@ -106,8 +108,8 @@
 			background: #ECEFF8;
 			height: 100%;
 			.el_card{
+				position: relative;
 				height: 100%;
-				overflow-y: scroll;
 			}
 			.el_card::-webkit-scrollbar {
 				display: none; 
