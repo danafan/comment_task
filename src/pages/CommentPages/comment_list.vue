@@ -89,7 +89,7 @@
 			@current-change="handleCurrentChange"
 			:current-page="page"
 			:pager-count="11"
-			:page-sizes="[5, 10, 15, 20,50,100]"
+			:page-sizes="[5, 10, 15, 20,30]"
 			layout="total, sizes, prev, pager, next, jumper"
 			:total="dataObj.total"
 			>
