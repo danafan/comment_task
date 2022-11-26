@@ -43,6 +43,12 @@
 					<el-option label="已返款" value="1"></el-option>
 				</el-select>
 			</el-form-item>
+			<el-form-item label="订单来源:" style="margin-right: 20px">
+				<el-select v-model="source" clearable :popper-append-to-body="false" placeholder="全部">
+					<el-option label="红包系统" value="1"></el-option>
+					<el-option label="会员系统" value="2"></el-option>
+				</el-select>
+			</el-form-item>
 			<el-form-item>
 				<el-button type="primary" size="small" @click="searchFun">搜索</el-button>
 			</el-form-item>
@@ -402,6 +408,7 @@
 				submit_time_start:"",
 				submit_time_end:"",
 				is_payment:"",								//返款状态
+				source:"",									//订单来源
 				pagesize:10,
 				page:1,
 				dataObj:{},									//评价返回数据
@@ -489,7 +496,8 @@
 					invitation_time_end:this.invitation_time_end,
 					submit_time_start:this.submit_time_start,
 					submit_time_end:this.submit_time_end,
-					is_payment:this.is_payment
+					is_payment:this.is_payment,
+					source:this.source
 				}
 				for(var item in arg){
 					let str = item + '=' + arg[item];
@@ -529,6 +537,7 @@
 					submit_time_start:this.submit_time_start,
 					submit_time_end:this.submit_time_end,
 					is_payment:this.is_payment,
+					source:this.source,
 					page:this.page,
 					pagesize:this.pagesize
 				}
