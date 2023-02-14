@@ -12,6 +12,7 @@ let path = {
 	replaceOrder:'order/replaceorder',					//更换订单
 	paymentEvaluate:'order/paymentevaluate',			//确认返款
 	paymentEvaluateBatch:'order/paymentevaluatebatch',	//批量返款
+	importFile:'file/importinvitationevaluate',			//导入模版
 
 }
 export default{
@@ -62,6 +63,10 @@ export default{
 	//批量返款
 	paymentEvaluateBatch(params){
 		return http.post(path.paymentEvaluateBatch, params)
+	},
+	//导入模版
+	importFile(params){
+		return http.post(path.importFile, params)
 	},
 }
 

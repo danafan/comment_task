@@ -54,8 +54,11 @@
 			</el-form-item>
 		</el-form>
 		<div class="buts">
-			<el-button type="primary" plain size="small" @click="returnMoney('all')">批量返款</el-button>
+			<el-button size="small" type="primary" v-if="role_id == '2'" @click="import_dialog = true">导入</el-button>
+			<div style="display: flex">
+				<el-button type="primary" plain size="small" @click="returnMoney('all')">批量返款</el-button>
 			<el-button type="primary" plain size="small" @click="exportFile">导出<i class="el-icon-download el-icon--right"></i></el-button>
+			</div>
 		</div>
 		<el-table size="small" :data="dataObj.data" tooltip-effect="dark" style="width: 100%" max-height="600" :header-cell-style="{'background':'#f4f4f4'}" @selection-change="handleSelectionChange">
 			<el-table-column type="selection" width="55" fixed :selectable="checkboxInit">
@@ -279,6 +282,22 @@
 			<el-button size="small" type="primary" @click="confirmFk">确认</el-button>
 		</div>
 	</el-dialog>
+	<!-- 导入 -->
+	<el-dialog :visible.sync="import_dialog" title="导入" width="30%">
+		<div class="down_box">
+			<el-button type="primary" plain size="small" @click="downTemplate">下载模版<i class="el-icon-download el-icon--right"></i></el-button>
+			<div class="upload_box">
+				<el-button type="primary" size="small">
+					导入
+					<i class="el-icon-upload el-icon--right"></i>
+				</el-button>
+				<input type="file" ref="csvUpload" class="upload_file" accept=".csv, application/vnd.ms-excel, application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" @change="uploadCsv">
+			</div>
+		</div>
+		<div slot="footer" class="dialog_footer">
+			<el-button size="small" @click="import_dialog = false">取消</el-button>
+		</div>
+	</el-dialog>
 </div>
 </template>
 <style lang="less" scoped>
@@ -336,7 +355,26 @@
 	margin-bottom: 15px;
 	display: flex;
 	align-items: center;
-	justify-content: flex-end;
+	justify-content: space-between;
+}
+.down_box{
+	display:flex;
+	
+	padding:30px;
+	.upload_box{
+		margin-left: 10px;
+		position: relative;
+		.upload_file{
+			position: absolute;
+			top: 0;
+			bottom: 0;
+			left: 0;
+			right: 0;
+			width: 100%;
+			height: 100%;
+			opacity: 0;
+		}
+	}
 }
 </style>
 <script>
@@ -435,6 +473,7 @@
 				order_id:"",			
 				back_type:"",				//返款类型
 				multiple_selection:[],		//多选的列表
+				import_dialog:false
 			}
 		},
 		created(){
@@ -504,6 +543,28 @@
 					arr.push(str);
 				};
 				exportUp(`order/exportorderlist?${arr.join('&')}`)
+			},
+			//下载模版
+			downTemplate(){
+				let downLoadUrl = `${location.origin}/user/`
+				window.open(`${downLoadUrl}file/importinvitationevaluate`);
+			},
+			//导入
+			uploadCsv(){
+				if (this.$refs.csvUpload.files.length > 0) {
+					let files = this.$refs.csvUpload.files;
+					resource.importFile({file:files[0]}).then(res => {
+						this.$refs.csvUpload.value = null;
+						this.import_dialog = false;
+						if(res.data.code == 1){
+							this.$message.success(res.data.msg);
+							//获取列表
+							this.orderList();
+						}else{
+							this.$message.warning(res.data.msg);
+						}
+					})
+				}
 			},
 			//获取店铺列表
 			shopList(){
