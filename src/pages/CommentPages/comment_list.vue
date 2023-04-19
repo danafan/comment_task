@@ -37,6 +37,10 @@
 				<el-date-picker v-model="commit_date" type="daterange" unlink-panels value-format="yyyy-MM-dd" range-separator="至" start-placeholder="开始日期" end-placeholder="结束日期" :append-to-body="false" :picker-options="pickerOptions">
 				</el-date-picker>
 			</el-form-item>
+			<el-form-item label="完成时间:" style="margin-right: 20px">
+				<el-date-picker v-model="over_date" type="daterange" unlink-panels value-format="yyyy-MM-dd" range-separator="至" start-placeholder="开始日期" end-placeholder="结束日期" :append-to-body="false" :picker-options="pickerOptions">
+				</el-date-picker>
+			</el-form-item>
 			<el-form-item label="返款状态:" style="margin-right: 20px">
 				<el-select v-model="is_payment" clearable :popper-append-to-body="false" placeholder="全部">
 					<el-option label="未返款" value="0"></el-option>
@@ -445,6 +449,9 @@
 				commit_date:[],								//提交日期
 				submit_time_start:"",
 				submit_time_end:"",
+				over_date:[],								//完成时间
+				finish_time_start:"",
+				finish_time_end:"",
 				is_payment:"",								//返款状态
 				source:"",									//订单来源
 				pagesize:10,
@@ -499,6 +506,11 @@
 				this.submit_time_start = n && n.length> 0?n[0]:"";
 				this.submit_time_end = n && n.length> 0?n[1]:"";
 			},
+			//完成日期
+			over_date:function(n){
+				this.finish_time_start = n && n.length> 0?n[0]:"";
+				this.finish_time_end = n && n.length> 0?n[1]:"";
+			},
 			//弹框类型
 			diaLogType:function(n){
 				if(n == '1'){
@@ -535,6 +547,8 @@
 					invitation_time_end:this.invitation_time_end,
 					submit_time_start:this.submit_time_start,
 					submit_time_end:this.submit_time_end,
+					finish_time_start:this.finish_time_start,
+					finish_time_end:this.finish_time_end,
 					is_payment:this.is_payment,
 					source:this.source
 				}
@@ -597,6 +611,8 @@
 					invitation_time_end:this.invitation_time_end,
 					submit_time_start:this.submit_time_start,
 					submit_time_end:this.submit_time_end,
+					finish_time_start:this.finish_time_start,
+					finish_time_end:this.finish_time_end,
 					is_payment:this.is_payment,
 					source:this.source,
 					page:this.page,
