@@ -61,7 +61,7 @@
 			<el-button size="small" type="primary" v-if="role_id == '2'" @click="import_dialog = true">导入</el-button>
 			<div style="display: flex">
 				<el-button type="primary" plain size="small" @click="returnMoney('all')">批量返款</el-button>
-			<el-button type="primary" plain size="small" @click="exportFile">导出<i class="el-icon-download el-icon--right"></i></el-button>
+				<el-button type="primary" plain size="small" @click="exportFile">导出<i class="el-icon-download el-icon--right"></i></el-button>
 			</div>
 		</div>
 		<el-table size="small" :data="dataObj.data" tooltip-effect="dark" style="width: 100%" max-height="600" :header-cell-style="{'background':'#f4f4f4'}" @selection-change="handleSelectionChange">
@@ -96,290 +96,314 @@
 				</template>
 			</el-table-column>
 		</el-table>
-		<div class="page">
-			<el-pagination
-			@size-change="handleSizeChange"
-			@current-change="handleCurrentChange"
-			:current-page="page"
-			:pager-count="11"
-			:page-sizes="[5, 10, 15, 20,30]"
-			layout="total, sizes, prev, pager, next, jumper"
-			:total="dataObj.total"
-			>
-		</el-pagination>
+		<div class="page_row">
+			<el-popover
+			ref="popover_ref"
+			placement="top"
+			width="200"
+			trigger="click">
+			<div class="add_popover">
+				<el-input style="width: 160px;margin-bottom: 10px;" size="mini" type="number" v-model="size_num">
+					<template slot="append">条/页</template>
+				</el-input>
+				<el-button type="primary" size="mini" @click="addSizeNumber">保存</el-button>
+			</div>
+			<el-button slot="reference" size="mini" plain>新增</el-button>
+		</el-popover>
+		<el-pagination
+		@size-change="handleSizeChange"
+		@current-change="handleCurrentChange"
+		:current-page="page"
+		:pager-count="11"
+		:page-size="pagesize"
+		:page-sizes="page_sizes"
+		layout="total, sizes,slot, prev, pager, next, jumper"
+		:total="dataObj.total"
+		>
+	</el-pagination>
+</div>
+<!-- 弹框 -->
+<el-dialog :title="dialog_title" center @close="closeDialog" :close-on-click-modal="false" :visible.sync="showDialog">
+	<div class="dialog_row">
+		<div class="label">订单日期</div>
+		<div class="value">{{orderDetail.order_time}}</div>
 	</div>
-	<!-- 弹框 -->
-	<el-dialog :title="dialog_title" center @close="closeDialog" :close-on-click-modal="false" :visible.sync="showDialog">
-		<div class="dialog_row">
-			<div class="label">订单日期</div>
-			<div class="value">{{orderDetail.order_time}}</div>
-		</div>
-		<div class="dialog_row" v-if="orderDetail.status > 1">
-			<div class="label">邀请时间</div>
-			<div class="value">{{orderDetail.invitation_time}}</div>
-		</div>
-		<div class="dialog_row" v-if="orderDetail.status > 2">
-			<div class="label">提交时间</div>
-			<div class="value">{{orderDetail.submit_time}}</div>
-		</div>
-		<div class="dialog_row" v-if="orderDetail.status > 3">
-			<div class="label">完成时间</div>
-			<div class="value">{{orderDetail.finish_time}}</div>
-		</div>
-		<div class="dialog_row">
-			<div class="label">编号</div>
-			<div class="value">{{orderDetail.order_id}}</div>
-		</div>
-		<div class="dialog_row">
-			<div class="label">商品ID</div>
-			<div class="value">{{orderDetail.goods_id}}</div>
-		</div>
-		<div class="dialog_row">
-			<div class="label">店铺名</div>
-			<div class="value">{{orderDetail.shop_name}}</div>
-		</div>
-		<div class="dialog_row">
-			<div class="label">旺旺号</div>
-			<div class="value">{{orderDetail.ww}}</div>
-		</div>
-		<div class="dialog_row">
-			<div class="label">管理员</div>
-			<div class="value">{{orderDetail.admin_name}}</div>
-		</div>
-		<div class="dialog_row">
-			<div class="label">订单号</div>
-			<div class="value">{{orderDetail.order_sn}}</div>
-		</div>
-		<div class="dialog_row">
-			<div class="label">评论图片</div>
-			<!-- 上传图片 -->
-			<div class="value" v-if="diaLogType == '1'">
-				<div class="dialog_img" v-for="(item,index) in comment_show_list" @mouseenter="item.is_del = true" @mouseleave="item.is_del = false">
-					<img class="img" :src="item.img_url">
-					<div class="modal" v-if="item.is_del == true">
-						<img src="../../static/deleteImg.png" @click="deteleFile(item.file_type,index)">
-					</div>
-				</div>
-				<UploadFile file_type="1" @callbackFn="callbackFn" v-if="comment_show_list.length < 5"/>
-			</div>
-			<!-- 展示图片 -->
-			<div class="value" v-else>
-				<div class="dialog_img" v-for="item in orderDetail.eva_imgs">
-					<img class="img" :src="item">
+	<div class="dialog_row" v-if="orderDetail.status > 1">
+		<div class="label">邀请时间</div>
+		<div class="value">{{orderDetail.invitation_time}}</div>
+	</div>
+	<div class="dialog_row" v-if="orderDetail.status > 2">
+		<div class="label">提交时间</div>
+		<div class="value">{{orderDetail.submit_time}}</div>
+	</div>
+	<div class="dialog_row" v-if="orderDetail.status > 3">
+		<div class="label">完成时间</div>
+		<div class="value">{{orderDetail.finish_time}}</div>
+	</div>
+	<div class="dialog_row">
+		<div class="label">编号</div>
+		<div class="value">{{orderDetail.order_id}}</div>
+	</div>
+	<div class="dialog_row">
+		<div class="label">商品ID</div>
+		<div class="value">{{orderDetail.goods_id}}</div>
+	</div>
+	<div class="dialog_row">
+		<div class="label">店铺名</div>
+		<div class="value">{{orderDetail.shop_name}}</div>
+	</div>
+	<div class="dialog_row">
+		<div class="label">旺旺号</div>
+		<div class="value">{{orderDetail.ww}}</div>
+	</div>
+	<div class="dialog_row">
+		<div class="label">管理员</div>
+		<div class="value">{{orderDetail.admin_name}}</div>
+	</div>
+	<div class="dialog_row">
+		<div class="label">订单号</div>
+		<div class="value">{{orderDetail.order_sn}}</div>
+	</div>
+	<div class="dialog_row">
+		<div class="label">评论图片</div>
+		<!-- 上传图片 -->
+		<div class="value" v-if="diaLogType == '1'">
+			<div class="dialog_img" v-for="(item,index) in comment_show_list" @mouseenter="item.is_del = true" @mouseleave="item.is_del = false">
+				<img class="img" :src="item.img_url">
+				<div class="modal" v-if="item.is_del == true">
+					<img src="../../static/deleteImg.png" @click="deteleFile(item.file_type,index)">
 				</div>
 			</div>
+			<UploadFile file_type="1" @callbackFn="callbackFn" v-if="comment_show_list.length < 5"/>
 		</div>
-		<div class="dialog_row">
-			<div class="label">评论视频</div>
-			<!-- 上传视频 -->
-			<div class="value" v-if="diaLogType == '1'">
-				<UploadFile :is_video="true" @callbackFn="uploadVideo" v-if="video_data == ''"/>
-				<div class="dialog_img" v-else @mouseenter="del_video = true" @mouseleave="del_video = false">
-					<video class="img" controls autoplay :src="video_data"></video>
-					<div class="modal" v-if="del_video == true">
-						<img src="../../static/deleteImg.png" @click="delVideo">
-					</div>
-				</div>
+		<!-- 展示图片 -->
+		<div class="value" v-else>
+			<div class="dialog_img" v-for="item in orderDetail.eva_imgs">
+				<img class="img" :src="item">
 			</div>
-			<!-- 展示视频 -->
-			<div class="value" v-else>
-				<div class="dialog_img">
-					<video class="img" controls autoplay :src="video_data" v-if="video_data != ''"></video>
+		</div>
+	</div>
+	<div class="dialog_row">
+		<div class="label">评论视频</div>
+		<!-- 上传视频 -->
+		<div class="value" v-if="diaLogType == '1'">
+			<UploadFile :is_video="true" @callbackFn="uploadVideo" v-if="video_data == ''"/>
+			<div class="dialog_img" v-else @mouseenter="del_video = true" @mouseleave="del_video = false">
+				<video class="img" controls autoplay :src="video_data"></video>
+				<div class="modal" v-if="del_video == true">
+					<img src="../../static/deleteImg.png" @click="delVideo">
 				</div>
 			</div>
 		</div>
-		<div class="dialog_row">
-			<div class="label">评论内容</div>
-			<el-input type="textarea" class="input_ele" :rows="3" placeholder="输入评论内容" :disabled="diaLogType != '1'" v-model="comment_content">
-			</el-input>
-		</div>
-		<div class="dialog_row">
-			<div class="label">追评图片</div>
-			<!-- 上传图片 -->
-			<div class="value" v-if="diaLogType == '1'">
-				<div class="dialog_img" v-for="(item,index) in zhui_show_list" @mouseenter="item.is_del = true" @mouseleave="item.is_del = false">
-					<img class="img" :src="item.img_url">
-					<div class="modal" v-if="item.is_del == true">
-						<img src="../../static/deleteImg.png" @click="deteleFile(item.file_type,index)">
-					</div>
-				</div>
-				<UploadFile file_type="2" @callbackFn="callbackFn" v-if="zhui_show_list.length < 5"/>
-			</div>
-			<!-- 展示图片 -->
-			<div class="value" v-else>
-				<div class="dialog_img" v-for="item in orderDetail.add_eva_imgs">
-					<img class="img" :src="item">
-				</div>
+		<!-- 展示视频 -->
+		<div class="value" v-else>
+			<div class="dialog_img">
+				<video class="img" controls autoplay :src="video_data" v-if="video_data != ''"></video>
 			</div>
 		</div>
-		<div class="dialog_row">
-			<div class="label">追评内容</div>
-			<el-input type="textarea" class="input_ele" :rows="3" placeholder="输入追评内容" :disabled="diaLogType != '1'" v-model="zhui_content">
-			</el-input>
-		</div>
-		<div class="dialog_row" v-if="diaLogType != '1'">
-			<div class="label">任务返图</div>
-			<!-- 上传图片 -->
-			<div class="value" v-if="diaLogType == '4'">
-				<div class="dialog_img" v-for="(item,index) in fan_show_list" @mouseenter="item.is_del = true" @mouseleave="item.is_del = false">
-					<img class="img" :src="item.img_url">
-					<div class="modal" v-if="item.is_del == true">
-						<img src="../../static/deleteImg.png" @click="deteleFile(item.file_type,index)">
-					</div>
-				</div>
-				<UploadFile file_type="3" @callbackFn="callbackFn" v-if="fan_show_list.length < 5"/>
-			</div>
-			<!-- 展示图片 -->
-			<div class="value" v-else>
-				<div class="dialog_img" v-for="item in orderDetail.return_imgs">
-					<img class="img" :src="item">
+	</div>
+	<div class="dialog_row">
+		<div class="label">评论内容</div>
+		<el-input type="textarea" class="input_ele" :rows="3" placeholder="输入评论内容" :disabled="diaLogType != '1'" v-model="comment_content">
+		</el-input>
+	</div>
+	<div class="dialog_row">
+		<div class="label">追评图片</div>
+		<!-- 上传图片 -->
+		<div class="value" v-if="diaLogType == '1'">
+			<div class="dialog_img" v-for="(item,index) in zhui_show_list" @mouseenter="item.is_del = true" @mouseleave="item.is_del = false">
+				<img class="img" :src="item.img_url">
+				<div class="modal" v-if="item.is_del == true">
+					<img src="../../static/deleteImg.png" @click="deteleFile(item.file_type,index)">
 				</div>
 			</div>
+			<UploadFile file_type="2" @callbackFn="callbackFn" v-if="zhui_show_list.length < 5"/>
 		</div>
-		<div class="dialog_row" v-if="diaLogType == '3'">
-			<div class="label">审核类型</div>
-			<el-radio-group v-model="type">
-				<el-radio label="1">通过</el-radio>
-				<el-radio label="2">拒绝</el-radio>
+		<!-- 展示图片 -->
+		<div class="value" v-else>
+			<div class="dialog_img" v-for="item in orderDetail.add_eva_imgs">
+				<img class="img" :src="item">
+			</div>
+		</div>
+	</div>
+	<div class="dialog_row">
+		<div class="label">追评内容</div>
+		<el-input type="textarea" class="input_ele" :rows="3" placeholder="输入追评内容" :disabled="diaLogType != '1'" v-model="zhui_content">
+		</el-input>
+	</div>
+	<div class="dialog_row" v-if="diaLogType != '1'">
+		<div class="label">任务返图</div>
+		<!-- 上传图片 -->
+		<div class="value" v-if="diaLogType == '4'">
+			<div class="dialog_img" v-for="(item,index) in fan_show_list" @mouseenter="item.is_del = true" @mouseleave="item.is_del = false">
+				<img class="img" :src="item.img_url">
+				<div class="modal" v-if="item.is_del == true">
+					<img src="../../static/deleteImg.png" @click="deteleFile(item.file_type,index)">
+				</div>
+			</div>
+			<UploadFile file_type="3" @callbackFn="callbackFn" v-if="fan_show_list.length < 5"/>
+		</div>
+		<!-- 展示图片 -->
+		<div class="value" v-else>
+			<div class="dialog_img" v-for="item in orderDetail.return_imgs">
+				<img class="img" :src="item">
+			</div>
+		</div>
+	</div>
+	<div class="dialog_row" v-if="diaLogType == '3'">
+		<div class="label">审核类型</div>
+		<el-radio-group v-model="type">
+			<el-radio label="1">通过</el-radio>
+			<el-radio label="2">拒绝</el-radio>
+		</el-radio-group>
+	</div>
+	<div class="dialog_row" v-if="type == '2'">
+		<div class="label">拒绝理由</div>
+		<el-input type="textarea" class="input_ele" :rows="3" placeholder="输入拒绝理由" :disabled="diaLogType == '2'" v-model="reason_content">
+		</el-input>
+	</div>
+	<div slot="footer" class="dialog-footer">
+		<el-button type="primary" size="small" @click="showDialog = false">取消</el-button>
+		<el-button type="primary" size="small" class="mmm" data-clipboard-target="#mmm" v-if="role_id == '3'" @click="copyContent">一键复制</el-button>
+		<el-button type="primary" size="small" @click="submit" v-if="diaLogType != '2'">提交</el-button>
+	</div>
+</el-dialog>
+<!-- 需要复制的内容 -->
+<div class="m_box" id="mmm">
+	<div>评论图片：</div>
+	<img class="img" :src="item" v-for="item in orderDetail.eva_imgs">
+	<div>评论内容：</div>
+	<div>{{comment_content}}</div>
+	<div>追评图片：</div>
+	<img class="img" :src="item" v-for="item in orderDetail.add_eva_imgs">
+	<div>追评内容：</div>
+	<div>{{zhui_content}}</div>
+</div>
+<!-- 返款 -->
+<el-dialog title="确认返款" :visible.sync="fk_model">
+	<el-form size="small">
+		<el-form-item label="返款路径:">
+			<el-radio-group v-model="fk_type">
+				<el-radio :label="2">返管理员支付宝</el-radio>
+				<el-radio :label="1">返款给会员支付宝</el-radio>
 			</el-radio-group>
-		</div>
-		<div class="dialog_row" v-if="type == '2'">
-			<div class="label">拒绝理由</div>
-			<el-input type="textarea" class="input_ele" :rows="3" placeholder="输入拒绝理由" :disabled="diaLogType == '2'" v-model="reason_content">
-			</el-input>
-		</div>
-		<div slot="footer" class="dialog-footer">
-			<el-button type="primary" size="small" @click="showDialog = false">取消</el-button>
-			<el-button type="primary" size="small" class="mmm" data-clipboard-target="#mmm" v-if="role_id == '3'" @click="copyContent">一键复制</el-button>
-			<el-button type="primary" size="small" @click="submit" v-if="diaLogType != '2'">提交</el-button>
-		</div>
-	</el-dialog>
-	<!-- 需要复制的内容 -->
-	<div class="m_box" id="mmm">
-		<div>评论图片：</div>
-		<img class="img" :src="item" v-for="item in orderDetail.eva_imgs">
-		<div>评论内容：</div>
-		<div>{{comment_content}}</div>
-		<div>追评图片：</div>
-		<img class="img" :src="item" v-for="item in orderDetail.add_eva_imgs">
-		<div>追评内容：</div>
-		<div>{{zhui_content}}</div>
+		</el-form-item>
+		<el-form-item label="合并返款:" v-if="fk_type == 2 && back_type == 'all'">
+			<el-radio-group v-model="is_merge">
+				<el-radio :label="1">是</el-radio>
+				<el-radio :label="0">否</el-radio>
+			</el-radio-group>
+		</el-form-item>
+	</el-form>
+	<div slot="footer" class="dialog-footer">
+		<el-button size="small" @click="fk_model = false">取消</el-button>
+		<el-button size="small" type="primary" @click="confirmFk">确认</el-button>
 	</div>
-	<!-- 返款 -->
-	<el-dialog title="确认返款" :visible.sync="fk_model">
-		<el-form size="small">
-			<el-form-item label="返款路径:">
-				<el-radio-group v-model="fk_type">
-					<el-radio :label="2">返管理员支付宝</el-radio>
-					<el-radio :label="1">返款给会员支付宝</el-radio>
-				</el-radio-group>
-			</el-form-item>
-			<el-form-item label="合并返款:" v-if="fk_type == 2 && back_type == 'all'">
-				<el-radio-group v-model="is_merge">
-					<el-radio :label="1">是</el-radio>
-					<el-radio :label="0">否</el-radio>
-				</el-radio-group>
-			</el-form-item>
-		</el-form>
-		<div slot="footer" class="dialog-footer">
-			<el-button size="small" @click="fk_model = false">取消</el-button>
-			<el-button size="small" type="primary" @click="confirmFk">确认</el-button>
+</el-dialog>
+<!-- 导入 -->
+<el-dialog :visible.sync="import_dialog" title="导入" width="30%">
+	<div class="down_box">
+		<el-button type="primary" plain size="small" @click="downTemplate">下载模版<i class="el-icon-download el-icon--right"></i></el-button>
+		<div class="upload_box">
+			<el-button type="primary" size="small">
+				导入
+				<i class="el-icon-upload el-icon--right"></i>
+			</el-button>
+			<input type="file" ref="csvUpload" class="upload_file" accept=".csv, application/vnd.ms-excel, application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" @change="uploadCsv">
 		</div>
-	</el-dialog>
-	<!-- 导入 -->
-	<el-dialog :visible.sync="import_dialog" title="导入" width="30%">
-		<div class="down_box">
-			<el-button type="primary" plain size="small" @click="downTemplate">下载模版<i class="el-icon-download el-icon--right"></i></el-button>
-			<div class="upload_box">
-				<el-button type="primary" size="small">
-					导入
-					<i class="el-icon-upload el-icon--right"></i>
-				</el-button>
-				<input type="file" ref="csvUpload" class="upload_file" accept=".csv, application/vnd.ms-excel, application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" @change="uploadCsv">
-			</div>
-		</div>
-		<div slot="footer" class="dialog_footer">
-			<el-button size="small" @click="import_dialog = false">取消</el-button>
-		</div>
-	</el-dialog>
+	</div>
+	<div slot="footer" class="dialog_footer">
+		<el-button size="small" @click="import_dialog = false">取消</el-button>
+	</div>
+</el-dialog>
 </div>
 </template>
 <style lang="less" scoped>
-.dialog_row{
-	margin-bottom: 12px;
-	display: flex;
-	font-size: 14px;
-	.label{
-		width: 80px;
-		font-weight: bold;
-	}
-	.value{
-		display:flex;
-		flex-wrap: wrap;
-		.dialog_img{
-			margin-right: 10px;
-			margin-bottom: 10px;
-			position: relative;
-			width: 120px;
-			height: 120px;
-			.img{
-				width: 100%;
-				height: 100%;
-			}
-			.modal{
-				background: rgba(0,0,0,.6);
-				position: absolute;
-				top: 0;
-				left: 0;
-				width: 100%;
-				height: 100%;
-				img{
+	.dialog_row{
+		margin-bottom: 12px;
+		display: flex;
+		font-size: 14px;
+		.label{
+			width: 80px;
+			font-weight: bold;
+		}
+		.value{
+			display:flex;
+			flex-wrap: wrap;
+			.dialog_img{
+				margin-right: 10px;
+				margin-bottom: 10px;
+				position: relative;
+				width: 120px;
+				height: 120px;
+				.img{
+					width: 100%;
+					height: 100%;
+				}
+				.modal{
+					background: rgba(0,0,0,.6);
 					position: absolute;
-					top: 50%;
-					left: 50%;
-					transform: translate(-50%,-50%);
-					display:block;
-					width: 30px;
-					height: 30px;
+					top: 0;
+					left: 0;
+					width: 100%;
+					height: 100%;
+					img{
+						position: absolute;
+						top: 50%;
+						left: 50%;
+						transform: translate(-50%,-50%);
+						display:block;
+						width: 30px;
+						height: 30px;
+					}
 				}
 			}
 		}
-	}
-	.input_ele{
-		width: 380px;
-	}
-}
-.m_box{
-	position: absolute;
-	width: 0;
-	height: 0;
-	opacity: 0;
-}
-.buts{
-	margin-bottom: 15px;
-	display: flex;
-	align-items: center;
-	justify-content: space-between;
-}
-.down_box{
-	display:flex;
-	
-	padding:30px;
-	.upload_box{
-		margin-left: 10px;
-		position: relative;
-		.upload_file{
-			position: absolute;
-			top: 0;
-			bottom: 0;
-			left: 0;
-			right: 0;
-			width: 100%;
-			height: 100%;
-			opacity: 0;
+		.input_ele{
+			width: 380px;
 		}
 	}
-}
+	.m_box{
+		position: absolute;
+		width: 0;
+		height: 0;
+		opacity: 0;
+	}
+	.buts{
+		margin-bottom: 15px;
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+	}
+	.down_box{
+		display:flex;
+
+		padding:30px;
+		.upload_box{
+			margin-left: 10px;
+			position: relative;
+			.upload_file{
+				position: absolute;
+				top: 0;
+				bottom: 0;
+				left: 0;
+				right: 0;
+				width: 100%;
+				height: 100%;
+				opacity: 0;
+			}
+		}
+	}
+	.add_popover{
+		display: flex;
+		flex-direction: column;
+		align-items:center;
+	}
+	.page_row{
+		margin-top: 5px;
+		display: flex;
+		align-items: center;
+	}
 </style>
 <script>
 	import resource from '../../api/resource.js'
@@ -480,10 +504,14 @@
 				order_id:"",			
 				back_type:"",				//返款类型
 				multiple_selection:[],		//多选的列表
-				import_dialog:false
+				import_dialog:false,
+				page_sizes:null,
+				size_num:""
 			}
 		},
 		created(){
+			let page_sizes = localStorage.getItem("page_sizes");
+			this.page_sizes = page_sizes?JSON.parse(page_sizes):[5, 10, 15, 20,30];
 			this.role_id =localStorage.getItem("role_id");
 			//获取店铺列表
 			this.shopList();
@@ -638,6 +666,20 @@
 					return 0
 				}
 			},
+			//点击确认添加页数量
+			addSizeNumber(){
+				if(!this.isZzs.test(this.size_num)){
+					this.$message.warning('每页数量为正整数！')
+				}else if(this.page_sizes.indexOf(this.size_num) > -1){
+					this.$message.warning('该数量已存在！')
+				}else{
+					this.page_sizes.push(parseInt(this.size_num));
+					this.handleSizeChange(parseInt(this.size_num))
+					this.size_num = "";
+					this.$refs['popover_ref'].doClose();
+					localStorage.setItem("page_sizes",JSON.stringify(this.page_sizes));
+				}
+			},
 			//分页
 			handleSizeChange(val) {
 				this.pagesize = val;
@@ -771,15 +813,15 @@
 							this.zhui_pass_list.push(files[i]);	
 							}else if(file_type == '3'){	//3:任务返图
 							//传递的图片对象
-							this.fan_pass_list.push(files[i]);	
-						}	
-						var fr = new FileReader();
-						fr.onload = (e) => {
-							let show_list_obj = {
-								img_url:e.target.result,
-								file_type:file_type,
-								is_del:false
-							}
+								this.fan_pass_list.push(files[i]);	
+							}	
+							var fr = new FileReader();
+							fr.onload = (e) => {
+								let show_list_obj = {
+									img_url:e.target.result,
+									file_type:file_type,
+									is_del:false
+								}
 							if(file_type == '1'){	//1:评论图片
 								//预览的图片地址
 								this.comment_show_list.push(show_list_obj);
@@ -816,8 +858,8 @@
 				})
 				clipboard.on('error', e =>{
      				// 不支持复制
-     				this.$message.warning('该浏览器不支持复制')
-     			})
+					this.$message.warning('该浏览器不支持复制')
+				})
 			},
 			//点击取消任务
 			cancelOrder(order_id){
