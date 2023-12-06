@@ -270,6 +270,12 @@
 </el-dialog>
 <!-- 需要复制的内容 -->
 <div class="m_box" id="mmm">
+	<div>订单日期：</div>
+	<div>{{orderDetail.order_time}}</div>
+	<div>旺旺号：</div>
+	<div>{{orderDetail.ww}}</div>
+	<div>订单号：</div>
+	<div>{{orderDetail.order_sn}}</div>
 	<div>评论图片：</div>
 	<img class="img" :src="item" v-for="item in orderDetail.eva_imgs">
 	<div>评论内容：</div>
