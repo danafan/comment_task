@@ -4,6 +4,11 @@
 			<el-form-item label="管理员:" style="margin-right: 20px">
 				<el-input clearable placeholder="输入管理员" v-model="admin_name"></el-input>
 			</el-form-item>
+			<el-form-item label="店铺类型:" style="margin-right: 20px">
+				<el-select v-model="shop_type" clearable :popper-append-to-body="false"placeholder="全部">
+					<el-option label="抖店" value="4"></el-option>
+				</el-select>
+			</el-form-item>
 			<el-form-item label="店铺名称:" style="margin-right: 20px">
 				<el-select v-model="shop_id" clearable filterable :popper-append-to-body="false"placeholder="全部">
 					<el-option v-for="item in store_list" :key="item.shop_id" :label="item.shop_name" :value="item.shop_id">
@@ -422,6 +427,7 @@
 				role_id:"",
 				store_list:[],								//店铺名称
 				admin_name:"",								//管理员
+				shop_type:"",								//店铺类型
 				shop_id:'',									//选中的店铺名称
 				goods_id:'',								//商品ID
 				order_sn:"",
@@ -571,6 +577,7 @@
 				let arg = {
 					admin_name:this.admin_name,
 					status:this.status == ''?'0':this.status,
+					shop_type:this.shop_type,
 					shop_id:this.shop_id == ''?'0':this.shop_id,
 					goods_id:this.goods_id,
 					order_sn:this.order_sn,
@@ -635,6 +642,7 @@
 				let arg = {
 					admin_name:this.admin_name,
 					status:this.status == ''?'0':this.status,
+					shop_type:this.shop_type,
 					shop_id:this.shop_id == ''?'0':this.shop_id,
 					goods_id:this.goods_id,
 					order_sn:this.order_sn,
